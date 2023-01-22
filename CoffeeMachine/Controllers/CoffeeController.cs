@@ -33,7 +33,7 @@ namespace CoffeeMachine.Controllers
 
             var response = new CoffeeMachineResponseDto
             {
-                Message = "Your piping hot coffee is ready",
+                Message = Constants.HotCoffeeReadyMessage,
                 Prepared = _dateTimeService.GetCurrentDateTimeInISO8601()
             };
             return Ok(response);
