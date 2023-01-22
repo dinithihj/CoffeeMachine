@@ -12,23 +12,26 @@ namespace CoffeeMachine.Tests.Controller
         private ICounterService _counterService;
         private IDateTimeService _dateTimeService;
         private CoffeeController _coffeeController;
+        private IWeatherService _weatherService;
         public CoffeeControllerTests()
         {
             //Dependencies
             _counterService = A.Fake<ICounterService>();
             _dateTimeService = A.Fake<IDateTimeService>();
+            _weatherService = A.Fake<IWeatherService>();
 
             //SUT
-            _coffeeController = new CoffeeController(_counterService, _dateTimeService);
+            _coffeeController = new CoffeeController(_counterService, _dateTimeService, _weatherService);
         }
 
         [Fact]
-        public void BrewCoffee_ReturnOKOnFirstCall()
+        public async void BrewCoffee_ReturnHotCoffeeReady()
         {
             //Arrange
+            A.CallTo(() => _weatherService.IsTemperatureGraterThanThirty()).Returns(false);
 
             //Act
-            var result = _coffeeController.BrewCoffee();
+            var result = await _coffeeController.BrewCoffee();
 
             //Assert
             result.Should().BeOfType<OkObjectResult>();
@@ -40,14 +43,14 @@ namespace CoffeeMachine.Tests.Controller
         }
 
         [Fact]
-        public void BreCoffee_Return503StatusCodeOnFifthCall()
+        public async void BreCoffee_Return503StatusCodeOnFifthCall()
         {
             //Arrange
             IActionResult result = null;
             A.CallTo(() => _counterService.IsOutOfCoffee()).Returns(true);
 
             //Act 
-            result = _coffeeController.BrewCoffee();
+            result = await _coffeeController.BrewCoffee();
 
 
             //Assert
@@ -57,14 +60,14 @@ namespace CoffeeMachine.Tests.Controller
         }
 
         [Fact]
-        public void BreCoffee_Return418OnAprilFirst()
+        public async void BreCoffee_Return418OnAprilFirst()
         {
             //Arrange
             IActionResult result = null;
             A.CallTo(() => _dateTimeService.IsAprilFirst()).Returns(true);
 
             //Act 
-            result = _coffeeController.BrewCoffee();
+            result = await _coffeeController.BrewCoffee();
 
 
             //Assert
@@ -72,5 +75,24 @@ namespace CoffeeMachine.Tests.Controller
             var objectResult = (ObjectResult)result;
             objectResult.StatusCode.Should().Be(418);
         }
+
+        [Fact]
+        public async void BrewCoffee_ReturnIcedCoffeeReady()
+        {
+            //Arrange
+            A.CallTo(() => _weatherService.IsTemperatureGraterThanThirty()).Returns(true);
+
+            //Act
+            var result = await _coffeeController.BrewCoffee();
+
+            //Assert
+            result.Should().BeOfType<OkObjectResult>();
+            var okResult = (OkObjectResult)result;
+            okResult.Value.Should().BeOfType<CoffeeMachineResponseDto>();
+            var dtoResult = (CoffeeMachineResponseDto)okResult.Value;
+            dtoResult.Message.Should().BeEquivalentTo("Your refreshing iced coffee is ready");
+
+        }
+
     }
 }

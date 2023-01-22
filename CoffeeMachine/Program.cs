@@ -8,6 +8,9 @@ builder.Services.AddControllers();
 builder.Services.AddSingleton<ICounterService, CounterService>();
 builder.Services.AddScoped<IDateTimeHelper, DateTimeHelper>();
 builder.Services.AddScoped<IDateTimeService, DateTimeService>();
+builder.Services.AddScoped<IWeatherApiHelper, WeatherApiHelper>();
+builder.Services.AddScoped<IWeatherService, WeatherService>();
+
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

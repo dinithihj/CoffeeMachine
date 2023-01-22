@@ -10,14 +10,18 @@ namespace CoffeeMachine.Controllers
     {
         private readonly ICounterService _counterService;
         private readonly IDateTimeService _dateTimeService;
-        public CoffeeController(ICounterService counterService, IDateTimeService dateTimeService)
+        private readonly IWeatherService _weatherService;
+        public CoffeeController(ICounterService counterService,
+            IDateTimeService dateTimeService,
+            IWeatherService weatherService)
         {
             _counterService = counterService;
             _dateTimeService = dateTimeService;
+            _weatherService = weatherService;
         }
 
         [HttpGet("brew-coffee")]
-        public IActionResult BrewCoffee()
+        public async Task<IActionResult> BrewCoffee()
         {
             _counterService.Increment();
 
@@ -31,12 +35,23 @@ namespace CoffeeMachine.Controllers
                 return StatusCode(418, null);
             }
 
-            var response = new CoffeeMachineResponseDto
+
+            if (await _weatherService.IsTemperatureGraterThanThirty())
             {
-                Message = Constants.HotCoffeeReadyMessage,
-                Prepared = _dateTimeService.GetCurrentDateTimeInISO8601()
-            };
-            return Ok(response);
+                return Ok(new CoffeeMachineResponseDto
+                {
+                    Message = Constants.IcedCoffeeReadyMessage,
+                    Prepared = _dateTimeService.GetCurrentDateTimeInISO8601()
+                });
+            }
+            else
+            {
+                return Ok(new CoffeeMachineResponseDto
+                {
+                    Message = Constants.HotCoffeeReadyMessage,
+                    Prepared = _dateTimeService.GetCurrentDateTimeInISO8601()
+                });
+            }
         }
 
     }
